@@ -1,0 +1,69 @@
+# Node.js dependencies
+node_modules/
+npm-debug.log*
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.log
+
+# Build artifacts
+dist/
+build/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Editor and OS files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Database and session storage
+/data/db/
+dump/
+
+# Coverage reports
+coverage/
+
+# Miscellaneous
+*.bak
+*.orig
+
+# TypeScript
+*.tsbuildinfo
+
+# Docker
+docker-compose.override.yml
+
+# Firebase
+.firebase/
+
+# Next.js specific (if using)
+.next/
+out/
+
+# Cloudinary cache (if using)
+.cloudinary/
+
+# Sentry debug files (if using)
+.sentryclirc
+
+# Public uploads (if applicable)
+public/uploads/
+uploads/
