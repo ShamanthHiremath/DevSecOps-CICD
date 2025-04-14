@@ -56,12 +56,13 @@ jobs:
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
         with:
-          projectBaseDir: ./server  # Adjust this based on your directory structure
+          projectBaseDir: ./server  # Your code directory
+          args: >
+            -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }}
+            -Dsonar.organization=${{ vars.SONAR_ORG }}
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
-          SONAR_ORG: ${{ secrets.SONAR_ORG }}
-          SONAR_HOST_URL: https://sonarcloud.io
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}          # From GitHub Secrets
+          SONAR_HOST_URL: https://sonarcloud.io            # SonarCloud URL
 
   security-check:
     name: OWASP Dependency-Check
