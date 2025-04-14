@@ -51,7 +51,7 @@ jobs:
           node-version: '16'
 
       - name: Install dependencies
-        run: npm install
+        run: cd server && npm install
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
