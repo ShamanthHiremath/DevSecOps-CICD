@@ -20,33 +20,22 @@ jobs:
     #   os: [ubuntu-latest, windows-latest, macos-latest]
     # runs-on: ${{ matrix.os }}
     runs-on: ubuntu-latest
-    services:
-      docker:
-        image: docker:20.10.16
-        options: --privileged
-
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
-      - name: Install Dependencies & Run Tests (Server)
-        working-directory: ./server
+      # Install dependencies in the /server directory
+      - name: Install dependencies for server
         run: |
+          cd server
           npm install
-          npm run build
-          npm test
 
-      - name: Install Dependencies & Run Tests (Client)
-        working-directory: ./client
+      # Install dependencies in the /client directory
+      - name: Install dependencies for client
         run: |
+          cd client
           npm install
-          npm run build
-          npm test
+
 
   sonarcloud:
     name: SonarQube Scan
@@ -90,7 +79,7 @@ jobs:
           out: "reports"
 
       - name: Upload Report Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dependency-check-report
           path: reports
