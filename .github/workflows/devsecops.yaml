@@ -48,19 +48,31 @@ jobs:
           npm run build
           npm test
 
-  sonar-scan:
+  sonarcloud:
     name: SonarQube Scan
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
 
-      - name: SonarQube Scan
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
         with:
-          projectBaseDir: ./server
+          projectBaseDir: ./server  # Adjust this based on your directory structure
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+          SONAR_ORG: ${{ secrets.SONAR_ORG }}
+          SONAR_HOST_URL: https://sonarcloud.io
 
   security-check:
     name: OWASP Dependency-Check
