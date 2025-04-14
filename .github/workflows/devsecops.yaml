@@ -1,7 +1,7 @@
 name: DevSecOps CI/CD Pipeline
 
 
-# defines the event/workflow triggers
+# defines the event/workflow triggers upon push or pull request to the main/ devsecops/pipeline branch
 on:
   push:
     branches: [ main, devsecops/pipeline ]
@@ -12,6 +12,8 @@ on:
 
 # these are the list of jobs that will be executed in the pipeline after the event is triggered
 jobs:
+
+
 # the build-and-test job will run on every push and pull request to the main branch
   build-and-test:
   # can be run on any OS, but we will use ubuntu-latest for this example
@@ -41,6 +43,8 @@ jobs:
     name: SonarQube Scan
     runs-on: ubuntu-latest
 
+    # checks out the code from the repository
+    # and sets up the Node.js environment for the SonarQube scan
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -53,9 +57,11 @@ jobs:
       - name: Install dependencies
         run: cd server && npm install
 
+        # this step runs the SonarQube scan using the SonarCloud GitHub Action
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
         with:
+        # projectBaseDir is the directory where the SonarQube scan will be run
           projectBaseDir: ./server
           args: >
             -X
@@ -65,6 +71,27 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
 
+      # this step installs the dependencies for the client application 
+      - name: Install dependencies for client
+        run: cd client && npm install
+
+      - name: SonarCloud Scan for Client
+        uses: SonarSource/sonarcloud-github-action@v2
+        with:
+          projectBaseDir: ./client
+          args: >
+            -X
+            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
+            -Dsonar.organization=${{ secrets.SONAR_ORG }}
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
+      
+
+
+  
+
+  # owasp-scan runs the OWASP ZAP security scanner on the server directory
   security-check:
     name: OWASP Dependency-Check
     runs-on: ubuntu-latest
@@ -85,6 +112,10 @@ jobs:
         with:
           name: dependency-check-report
           path: reports
+
+
+
+# docker build-push job builds and pushes Docker images for the server and client applications
 
   # docker-build-push:
   #   name: Build & Push Docker Images
@@ -109,6 +140,11 @@ jobs:
   #       run: |
   #         docker build -t ${{ secrets.DOCKER_USERNAME }}/ngo-client:latest ./client
   #         docker push ${{ secrets.DOCKER_USERNAME }}/ngo-client:latest
+
+
+
+
+# deployment to Azure Web App using the Azure Web Apps Deploy action
 
   # deploy:
   #   name: Deploy to Azure Web App
