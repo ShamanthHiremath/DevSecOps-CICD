@@ -58,8 +58,8 @@ jobs:
         with:
           projectBaseDir: ./server  # Your code directory
           args: >
-            -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }}
-            -Dsonar.organization=${{ vars.SONAR_ORG }}
+            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
+            -Dsonar.organization=${{ secrets.SONAR_ORG }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}          # From GitHub Secrets
           SONAR_HOST_URL: https://sonarcloud.io            # SonarCloud URL
