@@ -1,0 +1,131 @@
+name: DevSecOps CI/CD Pipeline
+
+
+# defines the event/workflow triggers
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+
+# these are the list of jobs that will be executed in the pipeline after the event is triggered
+jobs:
+# the build-and-test job will run on every push and pull request to the main branch
+  build-and-test:
+  # can be run on any OS, but we will use ubuntu-latest for this example
+    # strategy:
+    #   matrix:
+    #   os: [ubuntu-latest, windows-latest, macos-latest]
+    # runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
+    services:
+      docker:
+        image: docker:20.10.16
+        options: --privileged
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Dependencies & Run Tests (Server)
+        working-directory: ./server
+        run: |
+          npm ci
+          npm test
+
+      - name: Install Dependencies & Run Tests (Client)
+        working-directory: ./client
+        run: |
+          npm ci
+          npm test
+
+  sonar-scan:
+    name: SonarQube Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarcloud-github-action@v2
+        with:
+          projectBaseDir: ./server
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+  security-check:
+    name: OWASP Dependency-Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Dependency-Check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: "NGO-Management"
+          path: "./server"
+          format: "HTML"
+          out: "reports"
+
+      - name: Upload Report Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: dependency-check-report
+          path: reports
+
+  # docker-build-push:
+  #   name: Build & Push Docker Images
+  #   runs-on: ubuntu-latest
+  #   needs: [build-and-test, sonar-scan, security-check]
+  #   steps:
+  #     - name: Checkout Code
+  #       uses: actions/checkout@v3
+
+  #     - name: Log in to Docker Hub
+  #       uses: docker/login-action@v3
+  #       with:
+  #         username: ${{ secrets.DOCKER_USERNAME }}
+  #         password: ${{ secrets.DOCKER_PASSWORD }}
+
+  #     - name: Build and Push Server Image
+  #       run: |
+  #         docker build -t ${{ secrets.DOCKER_USERNAME }}/ngo-server:latest ./server
+  #         docker push ${{ secrets.DOCKER_USERNAME }}/ngo-server:latest
+
+  #     - name: Build and Push Client Image
+  #       run: |
+  #         docker build -t ${{ secrets.DOCKER_USERNAME }}/ngo-client:latest ./client
+  #         docker push ${{ secrets.DOCKER_USERNAME }}/ngo-client:latest
+
+  # deploy:
+  #   name: Deploy to Azure Web App
+  #   runs-on: ubuntu-latest
+  #   needs: docker-build-push
+
+  #   steps:
+  #     - name: Checkout Code
+  #       uses: actions/checkout@v3
+
+  #     - name: Login to Azure
+  #       uses: azure/login@v1
+  #       with:
+  #         creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+  #     - name: Deploy Server Container to Azure
+  #       uses: azure/webapps-deploy@v2
+  #       with:
+  #         app-name: ${{ secrets.AZURE_WEBAPP_NAME_SERVER }}
+  #         images: ${{ secrets.DOCKER_USERNAME }}/ngo-server:latest
+
+  #     - name: Deploy Client Container to Azure
+  #       uses: azure/webapps-deploy@v2
+  #       with:
+  #         app-name: ${{ secrets.AZURE_WEBAPP_NAME_CLIENT }}
+  #         images: ${{ secrets.DOCKER_USERNAME }}/ngo-client:latest
