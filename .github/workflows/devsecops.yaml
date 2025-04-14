@@ -4,9 +4,10 @@ name: DevSecOps CI/CD Pipeline
 # defines the event/workflow triggers
 on:
   push:
-    branches: [ main ]
+    branches: [ main, devsecops/pipeline ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, devsecops/pipeline ]
+
 
 
 # these are the list of jobs that will be executed in the pipeline after the event is triggered
