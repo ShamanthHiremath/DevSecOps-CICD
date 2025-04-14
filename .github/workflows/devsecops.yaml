@@ -37,13 +37,15 @@ jobs:
       - name: Install Dependencies & Run Tests (Server)
         working-directory: ./server
         run: |
-          npm ci
+          npm install
+          npm run build
           npm test
 
       - name: Install Dependencies & Run Tests (Client)
         working-directory: ./client
         run: |
-          npm ci
+          npm install
+          npm run build
           npm test
 
   sonar-scan:
