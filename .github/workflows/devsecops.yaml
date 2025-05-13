@@ -146,28 +146,28 @@ jobs:
 
 # deployment to Azure Web App using the Azure Web Apps Deploy action
 
-  # deploy:
-  #   name: Deploy to Azure Web App
-  #   runs-on: ubuntu-latest
-  #   needs: docker-build-push
+  deploy:
+    name: Deploy to Azure Web App
+    runs-on: ubuntu-latest
+    needs: docker-build-push
 
-  #   steps:
-  #     - name: Checkout Code
-  #       uses: actions/checkout@v3
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-  #     - name: Login to Azure
-  #       uses: azure/login@v1
-  #       with:
-  #         creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-  #     - name: Deploy Server Container to Azure
-  #       uses: azure/webapps-deploy@v2
-  #       with:
-  #         app-name: ${{ secrets.AZURE_WEBAPP_NAME_SERVER }}
-  #         images: ${{ secrets.DOCKER_USERNAME }}/ngo-server:latest
+      - name: Deploy Server Container to Azure
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ secrets.AZURE_WEBAPP_NAME_SERVER }}
+          images: ${{ secrets.DOCKER_USERNAME }}/ngo-server:latest
 
-  #     - name: Deploy Client Container to Azure
-  #       uses: azure/webapps-deploy@v2
-  #       with:
-  #         app-name: ${{ secrets.AZURE_WEBAPP_NAME_CLIENT }}
-  #         images: ${{ secrets.DOCKER_USERNAME }}/ngo-client:latest
+      - name: Deploy Client Container to Azure
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ secrets.AZURE_WEBAPP_NAME_CLIENT }}
+          images: ${{ secrets.DOCKER_USERNAME }}/ngo-client:latest
