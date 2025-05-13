@@ -1,17 +1,26 @@
 {
-  "name": "server",
+  "name": "event-management-server",
   "version": "1.0.0",
+  "description": "Backend for College Event Management System",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "build": "echo \"No build needed\"",
-    "test": "echo \"No tests yet\""
+    "dev": "nodemon index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
-    "express": "^5.1.0"
+    "bcryptjs": "^2.4.3",
+    "cloudinary": "^2.6.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-fileupload": "^1.5.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^7.6.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
   }
 }
