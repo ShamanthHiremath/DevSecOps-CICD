@@ -120,7 +120,7 @@ jobs:
   docker-build-push:
     name: Build & Push Docker Images
     runs-on: ubuntu-latest
-    needs: [build-and-test, sonar-scan, security-check]
+    needs: [build-and-test, sonarcloud, security-check]
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
