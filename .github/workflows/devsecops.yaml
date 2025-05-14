@@ -1,0 +1,173 @@
+name: DevSecOps CI/CD Pipeline
+
+
+# defines the event/workflow triggers upon push or pull request to the main/ devsecops/pipeline branch
+on:
+  push:
+    branches: [ main, devsecops/pipeline ]
+  pull_request:
+    branches: [ main, devsecops/pipeline ]
+
+
+
+# these are the list of jobs that will be executed in the pipeline after the event is triggered
+jobs:
+
+
+# the build-and-test job will run on every push and pull request to the main branch
+  build-and-test:
+  # can be run on any OS, but we will use ubuntu-latest for this example
+    # strategy:
+    #   matrix:
+    #   os: [ubuntu-latest, windows-latest, macos-latest]
+    # runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Install dependencies in the /server directory
+      - name: Install dependencies for server
+        run: |
+          cd server
+          npm install
+
+      # Install dependencies in the /client directory
+      - name: Install dependencies for client
+        run: |
+          cd client
+          npm install
+
+
+  sonarcloud:
+    name: SonarQube Scan
+    runs-on: ubuntu-latest
+
+    # checks out the code from the repository
+    # and sets up the Node.js environment for the SonarQube scan
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: cd server && npm install
+
+        # this step runs the SonarQube scan using the SonarCloud GitHub Action
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v2
+        with:
+        # projectBaseDir is the directory where the SonarQube scan will be run
+          projectBaseDir: ./server
+          args: >
+            -X
+            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
+            -Dsonar.organization=${{ secrets.SONAR_ORG }}
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
+
+      # this step installs the dependencies for the client application 
+      - name: Install dependencies for client
+        run: cd client && npm install
+
+      - name: SonarCloud Scan for Client
+        uses: SonarSource/sonarcloud-github-action@v2
+        with:
+          projectBaseDir: ./client
+          args: >
+            -X
+            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
+            -Dsonar.organization=${{ secrets.SONAR_ORG }}
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
+      
+
+
+  
+
+  # owasp-scan runs the OWASP ZAP security scanner on the server directory
+  security-check:
+    name: OWASP Dependency-Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Dependency-Check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: "NGO-Management"
+          path: "./server"
+          format: "HTML"
+          out: "reports"
+
+      - name: Upload Report Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-check-report
+          path: reports
+
+
+
+# docker build-push job builds and pushes Docker images for the server and client applications
+
+  # docker-build-push:
+  #   name: Build & Push Docker Images
+  #   runs-on: ubuntu-latest
+  #   needs: [build-and-test, sonar-scan, security-check]
+  #   steps:
+  #     - name: Checkout Code
+  #       uses: actions/checkout@v3
+
+  #     - name: Log in to Docker Hub
+  #       uses: docker/login-action@v3
+  #       with:
+  #         username: ${{ secrets.DOCKER_USERNAME }}
+  #         password: ${{ secrets.DOCKER_PASSWORD }}
+
+  #     - name: Build and Push Server Image
+  #       run: |
+  #         docker build -t ${{ secrets.DOCKER_USERNAME }}/ngo-server:latest ./server
+  #         docker push ${{ secrets.DOCKER_USERNAME }}/ngo-server:latest
+
+  #     - name: Build and Push Client Image
+  #       run: |
+  #         docker build -t ${{ secrets.DOCKER_USERNAME }}/ngo-client:latest ./client
+  #         docker push ${{ secrets.DOCKER_USERNAME }}/ngo-client:latest
+
+
+
+
+# deployment to Azure Web App using the Azure Web Apps Deploy action
+
+  # deploy:
+  #   name: Deploy to Azure Web App
+  #   runs-on: ubuntu-latest
+  #   needs: docker-build-push
+
+  #   steps:
+  #     - name: Checkout Code
+  #       uses: actions/checkout@v3
+
+  #     - name: Login to Azure
+  #       uses: azure/login@v1
+  #       with:
+  #         creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+  #     - name: Deploy Server Container to Azure
+  #       uses: azure/webapps-deploy@v2
+  #       with:
+  #         app-name: ${{ secrets.AZURE_WEBAPP_NAME_SERVER }}
+  #         images: ${{ secrets.DOCKER_USERNAME }}/ngo-server:latest
+
+  #     - name: Deploy Client Container to Azure
+  #       uses: azure/webapps-deploy@v2
+  #       with:
+  #         app-name: ${{ secrets.AZURE_WEBAPP_NAME_CLIENT }}
+  #         images: ${{ secrets.DOCKER_USERNAME }}/ngo-client:latest
