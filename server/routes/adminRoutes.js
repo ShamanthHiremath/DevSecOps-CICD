@@ -13,5 +13,6 @@ router.post('/register-event', adminController.registerForEvent);
 
 // Get event participants (protected route)
 router.get('/event-participants/:eventId', authenticateAdmin, adminController.getEventParticipants);
+router.get('/events/:eventId/participants', authenticateAdmin, adminController.getEventParticipants);
 
-module.exports = router; 
+module.exports = router;
