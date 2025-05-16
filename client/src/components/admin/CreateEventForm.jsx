@@ -345,7 +345,7 @@ const CreateEventForm = ({ onSubmit, isSubmitting }) => {
               <div className="flex text-sm text-gray-600">
                 <label
                   htmlFor="file-upload"
-                  className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
+                  className="relative cursor-pointer bg-white rounded-md font-medium text-red-800 hover:text-red-900 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
                 >
                   <span>Upload a file</span>
                   <input
@@ -371,7 +371,7 @@ const CreateEventForm = ({ onSubmit, isSubmitting }) => {
         <button
           type="submit"
           disabled={isSubmitting}
-          className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
+          className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-800 hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
             isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
           }`}
         >

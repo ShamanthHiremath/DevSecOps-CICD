@@ -86,7 +86,7 @@ exports.registerForEvent = async (req, res) => {
 // Get all event participants
 exports.getEventParticipants = async (req, res) => {
   try {
-
+    console.log("Fetching event participants");
     const { eventId } = req.params;
 
     // Check if event exists
@@ -115,19 +115,51 @@ exports.getEventParticipants = async (req, res) => {
 // Admin Signup
 exports.adminSignup = async (req, res) => {
   try {
+    console.log("Admin signup");
     const { email, password, name } = req.body;
     if (!email || !password || !name) {
       return res.status(400).json({ message: 'All fields are required' });
     }
+    console.log("Email: ", email);
     // Check if email already exists
     const existing = await User.findOne({ email });
     if (existing) {
       return res.status(409).json({ message: 'email already exists' });
     }
+    console.log("Creating new admin");
     const admin = new User({ email, password, name });
     await admin.save();
+    console.log("Admin created successfully");
     res.status(201).json({ message: 'Admin registered successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
-}; 
+};
+
+// Add this new method to your adminController
+const getEventParticipants = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    
+    // Find all bookings for this event and populate with user details
+    const bookings = await Booking.find({ event: eventId })
+      .populate('user', 'name email phone college department year')
+      .sort({ createdAt: -1 });
+    
+    res.status(200).json(bookings);
+  } catch (error) {
+    console.error('Error fetching event participants:', error);
+    res.status(500).json({ 
+      message: 'Error fetching participants', 
+      error: error.message 
+    });
+  }
+};
+
+// Export this new method along with your existing ones
+// module.exports = {
+//   adminLogin,
+//   registerForEvent,
+//   getEventParticipants,
+//   adminSignup
+// };
