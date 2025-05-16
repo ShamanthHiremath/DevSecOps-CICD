@@ -3,12 +3,12 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FaUser, FaLock, FaIdCard, FaArrowRight, FaArrowLeft } from 'react-icons/fa';
+import { FaUser, FaLock, FaEnvelope, FaArrowRight, FaArrowLeft } from 'react-icons/fa';
 
 const AdminSignup = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    username: '',
+    email: '',
     password: '',
     name: ''
   });
@@ -17,7 +17,8 @@ const AdminSignup = () => {
 
   const validate = () => {
     const newErrors = {};
-    if (!formData.username.trim()) newErrors.username = 'Username is required';
+    if (!formData.email.trim()) newErrors.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email is invalid';
     if (!formData.password.trim()) newErrors.password = 'Password is required';
     if (!formData.name.trim()) newErrors.name = 'Name is required';
     setErrors(newErrors);
@@ -129,31 +130,31 @@ const AdminSignup = () => {
               animate="visible"
               variants={formItemVariants}
             >
-              <label htmlFor="username" className="block text-sm font-medium text-[#5D0703] mb-1">
-                Username
+              <label htmlFor="email" className="block text-sm font-medium text-[#5D0703] mb-1">
+                Email Address
               </label>
               <div className="mt-1 relative rounded-md shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaIdCard className="text-[#FC703C]" />
+                  <FaEnvelope className="text-[#FC703C]" />
                 </div>
                 <motion.input
-                  id="username"
-                  name="username"
-                  type="text"
-                  value={formData.username}
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
                   onChange={handleChange}
                   whileFocus={{ scale: 1.01 }}
-                  className={`appearance-none block w-full pl-10 pr-3 py-3 border rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FC703C] focus:border-[#FC703C] transition-all duration-200 sm:text-sm ${errors.username ? 'border-red-500' : 'border-gray-300'}`}
-                  placeholder="Choose a username"
+                  className={`appearance-none block w-full pl-10 pr-3 py-3 border rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FC703C] focus:border-[#FC703C] transition-all duration-200 sm:text-sm ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
+                  placeholder="Enter your email address"
                 />
               </div>
-              {errors.username && (
+              {errors.email && (
                 <motion.p 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   className="mt-1 text-sm text-red-600"
                 >
-                  {errors.username}
+                  {errors.email}
                 </motion.p>
               )}
             </motion.div>
