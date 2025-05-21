@@ -159,6 +159,12 @@ jobs:
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+      
+      #  Set environment variables before deployment
+      - name: Configure Azure Environment Variables
+        run: |
+          az webapp config appsettings set --name ngo-server-app --resource-group ngo-resource-group --settings MONGODB_URI="${{ secrets.MONGODB_URI }}" JWT_SECRET="${{ secrets.JWT_SECRET }}" PORT="${{ secrets.PORT }}" CLOUD_NAME="${{ secrets.CLOUD_NAME }}" API_KEY="${{ secrets.API_KEY }}" API_SECRET="${{ secrets.API_SECRET }}" FOLDER_NAME="${{ secrets.FOLDER_NAME }}" SERVER_URL="${{ secrets.AZURE_SERVER_URL }}"
+
 
       - name: Deploy Server Container to Azure
         uses: azure/webapps-deploy@v2
