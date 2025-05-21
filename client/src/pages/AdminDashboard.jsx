@@ -22,7 +22,7 @@ const AdminDashboard = () => {
   const fetchEvents = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:5000/api/events');
+      const response = await axios.get(import.meta.env.VITE_SERVER_API_URL + '/api/events');
       setEvents(response.data);
     } catch (error) {
       console.error('Error fetching events:', error);
