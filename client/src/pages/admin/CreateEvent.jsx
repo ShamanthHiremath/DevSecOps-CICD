@@ -20,7 +20,7 @@ const CreateEvent = () => {
         data.append(key, formData[key]);
       });
 
-      const response = await axios.post('http://localhost:5000/api/events/create', data, {
+      const response = await axios.post(import.meta.env.VITE_SERVER_API_URL + '/api/events/create', data, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${localStorage.getItem('adminToken')}`
