@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import EventCard from '../components/events/EventCard';
-import RegistrationModal from '../components/events/RegistrationModal';
 import { toast } from 'react-toastify';
 import { motion } from 'framer-motion';
-import { FaCalendarAlt, FaSearch, FaMapMarkerAlt, FaTrophy, FaTimesCircle } from 'react-icons/fa';
+import { FaSearch, FaTimesCircle, FaCalendarAlt, FaMapMarkerAlt, FaTrophy } from 'react-icons/fa';
+import EventCard from '../components/events/EventCard';
+import UpcomingEvents from '../components/events/UpcomingEvents';
+import PastEvents from '../components/events/PastEvents';
+import RegistrationModal from '../components/events/RegistrationModal';
 
 const EventDetailModal = ({ event, isOpen, onClose, onRegister }) => {
   if (!isOpen || !event) return null;
@@ -53,14 +55,22 @@ const EventDetailModal = ({ event, isOpen, onClose, onRegister }) => {
           </div>
         </div>
         
-        <motion.button
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
-          onClick={() => onRegister(event)}
-          className="w-full bg-[#FC703C] text-white py-3 px-4 rounded-lg hover:bg-[#5D0703] transition-colors font-medium shadow-md"
-        >
-          Register
-        </motion.button>
+        {new Date(event.date) >= new Date() && (
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => onRegister(event)}
+            className="w-full bg-[#FC703C] text-white py-3 px-4 rounded-lg hover:bg-[#5D0703] transition-colors font-medium shadow-md"
+          >
+            Register
+          </motion.button>
+        )}
+
+        {new Date(event.date) < new Date() && (
+          <div className="w-full bg-gray-200 text-gray-700 py-3 px-4 rounded-lg font-medium shadow-md text-center">
+            Event Has Ended
+          </div>
+        )}
       </motion.div>
     </div>
   );
@@ -82,7 +92,7 @@ const Events = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/events');
+        const response = await axios.get(import.meta.env.VITE_SERVER_API_URL + '/api/events');
         setEvents(response.data);
       } catch (error) {
         toast.error('Failed to fetch events');
@@ -162,37 +172,56 @@ const Events = () => {
         </motion.div>
       </div>
 
-      {/* Events Grid */}
+      {/* Events Sections */}
       <section className="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {search ? (
+          // When searching, show all filtered events together
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+          >
+            <h2 className="text-2xl font-bold text-[#5D0703] mb-6">Search Results</h2>
             {filteredEvents.length > 0 ? (
-              filteredEvents.map((event, index) => (
-                <motion.div
-                  key={event._id}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                >
-                  <EventCard
-                    event={event}
-                    onRegister={handleRegister}
-                    onView={handleView}
-                  />
-                </motion.div>
-              ))
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {filteredEvents.map((event, index) => (
+                  <motion.div
+                    key={event._id}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                  >
+                    <EventCard
+                      event={event}
+                      onRegister={handleRegister}
+                      onView={handleView}
+                      isPast={new Date(event.date) < new Date()}
+                    />
+                  </motion.div>
+                ))}
+              </div>
             ) : (
-              <div className="col-span-full text-center text-[#5D0703] py-12 text-xl font-semibold">
+              <div className="text-center text-[#5D0703] py-12 text-xl font-semibold bg-white rounded-lg shadow-md">
                 <FaCalendarAlt className="text-5xl text-[#FC703C] mx-auto mb-4" />
                 No events found with the current search criteria
               </div>
             )}
-          </div>
-        </motion.div>
+          </motion.div>
+        ) : (
+          // When not searching, show upcoming and past events separately
+          <>
+            <UpcomingEvents 
+              events={events} 
+              onRegister={handleRegister} 
+              onView={handleView} 
+            />
+            
+            <PastEvents 
+              events={events} 
+              onView={handleView} 
+            />
+          </>
+        )}
       </section>
 
       {/* Event Detail Modal */}

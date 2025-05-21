@@ -1,71 +1,97 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FaCalendarAlt, FaMapMarkerAlt, FaUsers, FaArrowRight } from 'react-icons/fa';
+import { FaCalendarAlt, FaMapMarkerAlt, FaInfoCircle, FaUserPlus, FaHistory } from 'react-icons/fa';
 
-const EventCard = ({ event, onRegister, onView }) => {
+const EventCard = ({ event, onRegister, onView, isPast = false }) => {
+  const isEventPast = isPast || new Date(event.date) < new Date();
+
+  const handleCardClick = () => {
+    // Only allow view action for past events, not registration
+    if (isEventPast) {
+      onView(event);
+    }
+  };
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      whileHover={{ y: -5 }}
-      className="bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300"
-      onClick={() => onView(event)}
+      whileHover={{ y: -10 }}
+      className="bg-white rounded-lg shadow-lg overflow-hidden"
     >
       <div className="relative">
-        <img
-          src={event.image}
-          alt={event.title}
+        <img 
+          src={event.image} 
+          alt={event.title} 
           className="w-full h-48 object-cover"
+          style={isEventPast ? { filter: 'grayscale(50%)' } : {}}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent opacity-60"></div>
-        <div className="absolute bottom-0 left-0 w-full p-4">
-          <span className="bg-[#FC703C] text-white text-xs font-bold px-3 py-1 rounded-full">
-            {event.category}
-          </span>
+        <div className="absolute inset-0 bg-black opacity-20"></div>
+        <div className="absolute bottom-0 left-0 p-4 w-full">
+          <div className="flex justify-between">
+            <span className={`text-white text-xs uppercase font-semibold px-3 py-1 rounded-full ${
+              isEventPast ? 'bg-[#5D0703]' : 'bg-[#FC703C]'
+            }`}>
+              {event.category}
+            </span>
+            {isEventPast && (
+              <span className="bg-[#5D0703] bg-opacity-80 text-white text-xs uppercase font-semibold px-3 py-1 rounded-full flex items-center">
+                <FaHistory className="mr-1" /> Past
+              </span>
+            )}
+          </div>
         </div>
       </div>
       
-      <div className="p-4">
-        <h3 className="text-lg font-bold text-[#5D0703] mb-3 truncate">{event.title}</h3>
-        
-        <div className="space-y-2 mb-4">
-          <div className="flex items-center text-sm text-gray-600">
-            <FaCalendarAlt className="text-[#FC703C] mr-2" />
-            <span>{new Date(event.date).toLocaleDateString()}</span>
-          </div>
-          
-          <div className="flex items-center text-sm text-gray-600">
-            <FaMapMarkerAlt className="text-[#FC703C] mr-2" />
-            <span className="truncate">{event.location}</span>
-          </div>
-          
-          <div className="flex items-center text-sm text-gray-600">
-            <FaUsers className="text-[#FC703C] mr-2" />
-            <span>
-              {event.participantCount || 0} / {event.capacity} registered
-            </span>
-          </div>
+      <div className="p-5">
+        <h3 className="text-xl font-bold text-[#5D0703] truncate">{event.title}</h3>
+        <div className="flex items-center mt-2 text-gray-600 text-sm">
+          <FaCalendarAlt className="text-[#FC703C] mr-1" />
+          <span>{new Date(event.date).toLocaleDateString()}</span>
         </div>
+        <div className="flex items-center mt-2 text-gray-600 text-sm">
+          <FaMapMarkerAlt className="text-[#FC703C] mr-1" />
+          <span className="truncate">{event.location}</span>
+        </div>
+        <p className="text-gray-600 mt-3 text-sm line-clamp-2">
+          {event.description}
+        </p>
         
-        <div className="mt-auto flex flex-col space-y-2">
-          <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={e => { e.stopPropagation(); onView(event); }}
-            className="w-full bg-[#F4F3E6] text-[#5D0703] py-2 px-4 rounded-lg hover:bg-[#FFA175] hover:text-white transition-colors font-medium flex items-center justify-center"
-          >
-            View Details <FaArrowRight className="ml-1" />
-          </motion.button>
-          
-          <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={e => { e.stopPropagation(); onRegister(event); }}
-            className="w-full bg-[#FC703C] text-white py-2 px-4 rounded-lg hover:bg-[#5D0703] transition-colors font-medium"
-          >
-            Register Now
-          </motion.button>
+        <div className="mt-4 flex gap-2">
+          {/* Only show view details button for past events */}
+          {isEventPast ? (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => onView(event)}
+              className="w-full flex items-center justify-center bg-gray-100 text-[#5D0703] rounded-md py-2 px-4 text-sm font-medium hover:bg-gray-200 transition-colors"
+            >
+              <FaInfoCircle className="mr-2" /> View Details
+            </motion.button>
+          ) : (
+            <>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => onView(event)}
+                className="flex-1 flex items-center justify-center bg-gray-100 text-[#5D0703] rounded-md py-2 px-4 text-sm font-medium hover:bg-gray-200 transition-colors"
+              >
+                <FaInfoCircle className="mr-2" /> Details
+              </motion.button>
+              
+              {onRegister && (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRegister(event);
+                  }}
+                  className="flex-1 flex items-center justify-center bg-[#FC703C] text-white rounded-md py-2 px-4 text-sm font-medium hover:bg-[#5D0703] transition-colors"
+                >
+                  <FaUserPlus className="mr-2" /> Register
+                </motion.button>
+              )}
+            </>
+          )}
         </div>
       </div>
     </motion.div>

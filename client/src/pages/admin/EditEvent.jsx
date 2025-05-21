@@ -1,37 +1,71 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { motion } from 'framer-motion';
-import { FaArrowLeft, FaCalendarPlus, FaSpinner } from 'react-icons/fa';
-import CreateEventForm from '../../components/admin/CreateEventForm';
+import { FaEdit, FaArrowLeft, FaSpinner } from 'react-icons/fa'; // Changed FaCalendarEdit to FaEdit
+import EventForm from '../../components/admin/EventForm';
 
-const CreateEvent = () => {
+const EditEvent = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [event, setEvent] = useState(null);
 
-  const handleCreateEvent = async (formData) => {
+  useEffect(() => {
+    const fetchEvent = async () => {
+      try {
+        setIsLoading(true);
+        const response = await axios.get(`http://localhost:5000/api/events/${id}`);
+        
+        // Format date for input field (YYYY-MM-DD)
+        const eventDate = new Date(response.data.date);
+        const formattedDate = eventDate.toISOString().split('T')[0];
+        
+        // Prepare event data
+        setEvent({
+          ...response.data,
+          date: formattedDate
+        });
+      } catch (error) {
+        console.error('Error fetching event:', error);
+        toast.error('Failed to load event details');
+        navigate('/admin/dashboard');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchEvent();
+  }, [id, navigate]);
+
+  const handleUpdateEvent = async (formData) => {
     try {
       setIsSubmitting(true);
       
       // Create FormData object for file upload
       const data = new FormData();
       Object.keys(formData).forEach(key => {
+        if (key === 'image' && formData[key] === null) {
+          // Skip null image (when keeping the existing image)
+          return;
+        }
         data.append(key, formData[key]);
       });
 
-      const response = await axios.post(import.meta.env.VITE_SERVER_API_URL + '/api/events/create', data, {
+      const response = await axios.put(`http://localhost:5000/api/events/${id}`, data, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${localStorage.getItem('adminToken')}`
         }
       });
 
-      toast.success('Event created successfully!');
+      toast.success('Event updated successfully!');
       navigate('/admin/dashboard');
     } catch (error) {
-      console.error('Error creating event:', error);
-      toast.error(error.response?.data?.message || 'Failed to create event');
+      console.error('Error updating event:', error);
+      toast.error(error.response?.data?.message || 'Failed to update event');
     } finally {
       setIsSubmitting(false);
     }
@@ -53,6 +87,14 @@ const CreateEvent = () => {
     animate: { opacity: 1, y: 0, transition: { duration: 0.6, delay: 0.3 } }
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#F4F3E6] flex items-center justify-center">
+        <div className="w-16 h-16 border-4 border-[#FC703C] border-t-[#5D0703] rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
   return (
     <motion.div 
       className="min-h-screen bg-[#F4F3E6] py-12"
@@ -67,9 +109,9 @@ const CreateEvent = () => {
           variants={headerVariants}
         >
           <div className="flex items-center">
-            <FaCalendarPlus className="text-[#FC703C] text-2xl mr-3" />
+            <FaEdit className="text-[#FC703C] text-2xl mr-3" />
             <h2 className="text-3xl font-bold text-[#5D0703]">
-              Create Event
+              Edit Event
             </h2>
           </div>
           <motion.button
@@ -87,7 +129,7 @@ const CreateEvent = () => {
           variants={headerVariants}
         >
           <p className="text-[#FC703C] max-w-3xl">
-            Fill in the details below to add a new event to your system. Make sure to provide all required information for a complete event listing.
+            Update the event details below. Make sure to provide all required information.
           </p>
         </motion.div>
 
@@ -96,7 +138,7 @@ const CreateEvent = () => {
           variants={formVariants}
         >
           <div className="bg-gradient-to-r from-[#FC703C] to-[#5D0703] px-6 py-4">
-            <h3 className="text-xl font-semibold text-white">Event Details</h3>
+            <h3 className="text-xl font-semibold text-white">{event.title}</h3>
             <p className="text-white text-opacity-80 text-sm">
               {isSubmitting ? (
                 <span className="flex items-center">
@@ -109,26 +151,17 @@ const CreateEvent = () => {
           </div>
           
           <div className="p-6">
-            <CreateEventForm onSubmit={handleCreateEvent} isSubmitting={isSubmitting} />
+            <EventForm 
+              onSubmit={handleUpdateEvent} 
+              isSubmitting={isSubmitting} 
+              initialValues={event}
+              isEditing={true}
+            />
           </div>
-        </motion.div>
-        
-        <motion.div 
-          className="mt-8 text-center text-sm text-[#5D0703]"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.7 }}
-        >
-          <p>
-            Need help? Check out the{' '}
-            <span className="font-medium text-[#FC703C] hover:text-[#5D0703] cursor-pointer">
-              event creation guidelines
-            </span>
-          </p>
         </motion.div>
       </div>
     </motion.div>
   );
 };
 
-export default CreateEvent;
+export default EditEvent;
