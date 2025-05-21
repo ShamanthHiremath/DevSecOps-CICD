@@ -25,7 +25,7 @@ build/
 .env.development.local
 .env.test.local
 .env.production.local
-
+*/.env
 # Editor and OS files
 .DS_Store
 Thumbs.db
