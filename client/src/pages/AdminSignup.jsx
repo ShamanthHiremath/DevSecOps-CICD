@@ -37,7 +37,7 @@ const AdminSignup = () => {
     if (!validate()) return;
     setIsSubmitting(true);
     try {
-      const res = await axios.post('http://localhost:5000/api/admin/signup', formData);
+      const res = await axios.post(import.meta.env.VITE_SERVER_API_URL + '/api/admin/signup', formData);
       toast.success('Admin registered successfully!');
       navigate('/admin/login');
     } catch (error) {

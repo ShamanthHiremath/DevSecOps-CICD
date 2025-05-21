@@ -72,7 +72,7 @@ const RegistrationForm = ({ eventId, capacity }) => {
 
     setIsSubmitting(true);
     try {
-      const response = await axios.post('http://localhost:5000/api/admin/register-event', {
+      const response = await axios.post(import.meta.env.VITE_SERVER_API_URL + '/api/admin/register-event', {
         eventId,
         usn: formData.usn.toUpperCase(),
         name: formData.name,
