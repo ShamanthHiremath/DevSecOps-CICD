@@ -55,7 +55,7 @@ const AdminDashboard = () => {
     if (!eventToDelete) return;
     
     try {
-      await axios.delete(`http://localhost:5000/api/events/${eventToDelete._id}`, {
+      await axios.delete(import.meta.env.VITE_SERVER_API_URL + `/api/events/${eventToDelete._id}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('adminToken')}`
         }
