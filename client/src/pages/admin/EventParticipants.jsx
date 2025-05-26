@@ -15,12 +15,14 @@ const EventParticipants = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
 
+  
+
   useEffect(() => {
     const fetchEventDetails = async () => {
       try {
         setLoading(true);
         // Fetch event details
-        const eventResponse = await axios.get(`http://localhost:5000/api/events/${eventId}`, {
+        const eventResponse = await axios.get(import.meta.env.VITE_SERVER_API_URL + `/api/events/${eventId}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('adminToken')}`
           }
@@ -30,13 +32,12 @@ const EventParticipants = () => {
         
         // Try the proper admin endpoint for participants 
         try {
-          const participantsResponse = await axios.get(`http://localhost:5000/api/admin/events/${eventId}/participants`, {
+          const participantsResponse = await axios.get(import.meta.env.VITE_SERVER_API_URL + `/api/admin/events/${eventId}/participants`, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem('adminToken')}`
             }
           });
           
-          console.log("Raw participants response:", participantsResponse);
           
           // Ensure participants is always an array and handle different response structures
           let participantsData = [];
@@ -52,7 +53,6 @@ const EventParticipants = () => {
             }
           }
           
-          console.log("Processed participants data:", participantsData);
           setParticipants(participantsData);
         } catch (participantsError) {
           console.error("Error fetching participants:", participantsError);
@@ -77,9 +77,9 @@ const EventParticipants = () => {
     ? participants.filter(participant => {
         // Handle different possible data structures
         const userName = participant?.user?.name || participant?.name || '';
-        const userEmail = participant?.user?.email || participant?.email || '';
-        const userCollege = participant?.user?.college || participant?.college || '';
-        const userDept = participant?.user?.department || participant?.department || '';
+        const userEmail = participant?.user?.usn || participant?.usn || '';
+        const userCollege = participant?.user?.year || participant?.year || '';
+        const userDept = participant?.user?.branch || participant?.branch || '';
         
         return userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                userEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -102,16 +102,15 @@ const EventParticipants = () => {
     }
 
     // Create CSV headers
-    const headers = ['Name', 'Email', 'Phone', 'College', 'Department', 'Year', 'Registration Date'];
+    const headers = ['Name', 'USN', 'branch', 'Year', 'Semester', 'Registration Date'];
     
     // Format participant data
     const data = participants.map(p => [
       p.user?.name || 'N/A',
-      p.user?.email || 'N/A',
-      p.user?.phone || 'N/A',
-      p.user?.college || 'N/A',
-      p.user?.department || 'N/A',
+      p.user?.usn || 'N/A',
       p.user?.year || 'N/A',
+      p.user?.branch || 'N/A',
+      p.user?.semester || 'N/A',
       p.createdAt ? new Date(p.createdAt).toLocaleString() : 'N/A'
     ]);
     
@@ -223,7 +222,7 @@ const EventParticipants = () => {
                     setSearchTerm(e.target.value);
                     setCurrentPage(1); // Reset to first page on search
                   }}
-                  placeholder="Search by name, email, college or department..."
+                  placeholder="Search by name, email, college or branch..."
                   className="pl-10 py-2 block w-full shadow-sm border-gray-300 rounded-md focus:ring-[#FC703C] focus:border-[#FC703C]"
                 />
                 {searchTerm && (
@@ -255,13 +254,13 @@ const EventParticipants = () => {
                         Name
                       </th>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Email & Phone
+                        USN
                       </th>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        College
+                        Branch
                       </th>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Department & Year
+                        Year
                       </th>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Registered On
@@ -273,10 +272,9 @@ const EventParticipants = () => {
                       // Extract user data handling different possible structures
                       const userData = participant?.user || participant;
                       const userName = userData?.name || 'Unknown User';
-                      const userEmail = userData?.email || 'N/A';
-                      const userPhone = userData?.phone || 'N/A';
-                      const userCollege = userData?.college || 'N/A';
-                      const userDepartment = userData?.department || 'N/A';
+                      const userSem = userData?.semster || 'N/A';
+                      const userUsn = userData?.usn || 'N/A';
+                      const userbranch = userData?.branch || 'N/A';
                       const userYear = userData?.year || 'N/A';
                       const registrationDate = participant?.createdAt || participant?.registrationDate || 'N/A';
                       
@@ -297,15 +295,15 @@ const EventParticipants = () => {
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-900">{userEmail}</div>
-                            <div className="text-sm text-gray-500">{userPhone}</div>
+                            <div className="text-sm text-gray-900">{userUsn}</div>
+                            {/* <div className="text-sm text-gray-500">{userPhone}</div> */}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-900">{userCollege}</div>
+                            <div className="text-sm text-gray-900">{userbranch}</div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-900">{userDepartment}</div>
-                            <div className="text-sm text-gray-500">{userYear}</div>
+                            <div className="text-sm text-gray-900">{userYear}</div>
+                            {/* <div className="text-sm text-gray-500">{userYear}</div> */}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {typeof registrationDate === 'string' 

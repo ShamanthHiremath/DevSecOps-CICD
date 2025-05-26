@@ -29,7 +29,7 @@ const Layout = ({ children }) => (
 );
 
 function App() {
-  // console.log(import.meta.env.VITE_SERVER_API_URL);
+
   return (
     <BrowserRouter>
       <ToastContainer position="top-right" autoClose={3000} />

@@ -86,7 +86,6 @@ exports.registerForEvent = async (req, res) => {
 // Get all event participants
 exports.getEventParticipants = async (req, res) => {
   try {
-    console.log("Fetching event participants");
     const { eventId } = req.params;
 
     // Check if event exists
@@ -115,21 +114,17 @@ exports.getEventParticipants = async (req, res) => {
 // Admin Signup
 exports.adminSignup = async (req, res) => {
   try {
-    console.log("Admin signup");
     const { email, password, name } = req.body;
     if (!email || !password || !name) {
       return res.status(400).json({ message: 'All fields are required' });
     }
-    console.log("Email: ", email);
     // Check if email already exists
     const existing = await User.findOne({ email });
     if (existing) {
       return res.status(409).json({ message: 'email already exists' });
     }
-    console.log("Creating new admin");
     const admin = new User({ email, password, name });
     await admin.save();
-    console.log("Admin created successfully");
     res.status(201).json({ message: 'Admin registered successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
