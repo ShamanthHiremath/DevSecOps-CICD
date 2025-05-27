@@ -68,10 +68,7 @@ jobs:
         with:
           app-name: 'rit-events-app'
           slot-name: 'Production'
-          app-settings-json: |
-            {
-              "STARTUP_COMMAND": "node server/index.js"
-            }
+          app-settings-json: '{"STARTUP_COMMAND": "node server/index.js"}'
             
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
