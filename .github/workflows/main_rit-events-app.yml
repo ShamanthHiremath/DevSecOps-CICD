@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy Node.js app to Azure Web App - rit-events-app
+name: Build and deploy Docker Compose app to Azure Web App - rit-events-app
 
 on:
   push:
@@ -10,70 +10,41 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    runs-on: windows-latest
+  build-and-deploy:
+    runs-on: ubuntu-latest
     permissions:
-      contents: read #This is required for actions/checkout
-
+      id-token: write
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js version
-        uses: actions/setup-node@v3
-        with:
-          node-version: '22.x'
-
-      - name: Install server dependencies
-        run: |
-          cd server
-          npm install
-      
-      - name: Install and build client
-        run: |
-          cd client
-          npm install
-          npm run build
-      
-      - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v4
-        with:
-          name: node-app
-          path: .
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    environment:
-      name: 'Production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-    permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
-
-    steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
-        with:
-          name: node-app
-      
-      - name: Login to Azure
+      - name: Log in to Azure
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_2BB84982AED3439F9C92D3D5B13A3270 }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_1B9B12914A0943349A363A0670D810FF }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_615AA9BB9C0742719EB383D8B313E360 }}
-      
-      - name: Set Azure App Service startup command
-        uses: Azure/appservice-settings@v1
-        with:
-          app-name: 'rit-events-app'
-          slot-name: 'Production'
-          app-settings-json: '{"STARTUP_COMMAND": "node server/index.js"}'
-      - name: 'Deploy to Azure Web App'
+
+      # - name: Set environment variables for build
+      #   run: |
+      #     echo "MONGODB_URI=\"${{ secrets.MONGO }}\"" >> server/.env
+      #     echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> server/.env
+      #     echo "PORT=5000" >> server/.env
+      #     echo "CLOUD_NAME=\"${{ secrets.CLOUD_NAME }}\"" >> server/.env
+      #     echo "API_KEY=\"${{ secrets.API_KEY }}\"" >> server/.env
+      #     echo "API_SECRET=\"${{ secrets.API_SECRET }}\"" >> server/.env
+      #     echo "FOLDER_NAME=\"${{ secrets.FOLDER_NAME }}\"" >> server/.env
+
+
+      - name: Build and push images (Docker Compose)
+        run: |
+          docker-compose build
+        # If you want to push to ACR or Docker Hub, add push commands here
+
+      - name: Deploy to Azure Web App for Containers (Docker Compose)
         uses: azure/webapps-deploy@v3
-        id: deploy-to-webapp
         with:
           app-name: 'rit-events-app'
           slot-name: 'Production'
-          package: .
-          
+          compose-file: 'docker-compose.yml'
+
