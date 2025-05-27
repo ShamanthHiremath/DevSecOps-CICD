@@ -28,7 +28,7 @@ jobs:
           cd server
           npm install
           npm run build --if-present
-          npm run start
+#          npm run start
       
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
