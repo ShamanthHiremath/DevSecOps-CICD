@@ -23,6 +23,11 @@ jobs:
         with:
           node-version: '22.x'
 
+      - name: Create .env file for production
+        run: |
+          echo VITE_SERVER_API_URL=${{ secrets.VITE_SERVER_API_URL }} > .env
+        working-directory: ./client
+
       - name: npm install, build, and test (client)
         run: |
           cd client
