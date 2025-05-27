@@ -44,7 +44,7 @@ jobs:
       - name: Deploy to Azure Web App for Containers (Docker Compose)
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'rit-events-app'
+          app-name: 'rit-events-webapp'
           slot-name: 'Production'
           compose-file: 'docker-compose.yml'
 
