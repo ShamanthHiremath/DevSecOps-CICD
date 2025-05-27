@@ -25,7 +25,7 @@ jobs:
 
       - name: Create .env file for production
         run: |
-          echo VITE_SERVER_API_URL=${{ secrets.VITE_SERVER_API_URL }} > .env
+          echo VITE_SERVER_API_URL=https://rit-events-server.azurewebsites.net > .env
         working-directory: ./client
 
       - name: npm install, build, and test (client)
