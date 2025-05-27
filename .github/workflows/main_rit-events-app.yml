@@ -62,7 +62,17 @@ jobs:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_2BB84982AED3439F9C92D3D5B13A3270 }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_1B9B12914A0943349A363A0670D810FF }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_615AA9BB9C0742719EB383D8B313E360 }}
-
+      
+      - name: Set Azure App Service startup command
+        uses: Azure/appservice-settings@v1
+        with:
+          app-name: 'rit-events-app'
+          slot-name: 'Production'
+          app-settings-json: |
+            {
+              "STARTUP_COMMAND": "node server/index.js"
+            }
+            
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
