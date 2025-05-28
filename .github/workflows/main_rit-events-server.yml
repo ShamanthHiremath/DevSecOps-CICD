@@ -66,3 +66,11 @@ jobs:
           app-name: 'rit-events-server'
           slot-name: 'Production'
           package: .
+      
+      - name: Test deployed API endpoint
+        run: |
+          echo "Waiting for deployment to complete..."
+          sleep 30
+          curl -v --fail ${{ steps.deploy-to-webapp.outputs.webapp-url }} || exit 1
+        env:
+          webapp-url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
