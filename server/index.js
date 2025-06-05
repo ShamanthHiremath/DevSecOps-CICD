@@ -33,13 +33,6 @@ app.use(
 app.use('/api/admin', adminRoutes);
 app.use('/api/events', eventRoutes);
 
-// Serve static files from the React app build
-app.use(express.static(path.join(__dirname, '../client/dist')));
-
-// For any other route, serve the React app's index.html
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/dist', 'index.html'));
-});
 
 // Health check endpoint
 app.get('/health', (req, res) => {
