@@ -6,6 +6,29 @@ import { FaTimes, FaCalendarAlt, FaMapMarkerAlt } from 'react-icons/fa';
 const RegistrationModal = ({ event, isOpen, onClose }) => {
   if (!isOpen) return null;
 
+  // Handle successful registration
+  const handleRegistrationSuccess = () => {
+    onClose(); // Close the modal immediately after successful registration
+  };
+
+  // Add ESC key functionality
+  React.useEffect(() => {
+    const handleEscapeKey = (event) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscapeKey);
+    }
+
+    // Cleanup function to remove event listener
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [isOpen, onClose]);
+
   const backdropVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1 }
@@ -79,7 +102,11 @@ const RegistrationModal = ({ event, isOpen, onClose }) => {
               </div>
               
               <h4 className="font-semibold text-[#5D0703] mb-4">Please complete the registration form</h4>
-              <RegistrationForm eventId={event._id} capacity={event.capacity} />
+              <RegistrationForm 
+                eventId={event._id} 
+                capacity={event.capacity} 
+                onSuccess={handleRegistrationSuccess}
+              />
             </div>
           </motion.div>
         </motion.div>

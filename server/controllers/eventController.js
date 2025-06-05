@@ -18,14 +18,23 @@ const createEvent = async (req, res) => {
       category, 
       firstPrice, 
       secondPrice, 
-      thirdPrice 
+      thirdPrice,
+      eligibility
     } = req.body;
 
   
     // Validate required fields
     if (!title || !department || !description || !date || !time || !location || !category || 
-        !firstPrice || !secondPrice || !thirdPrice) {
+        !firstPrice || !secondPrice || !thirdPrice || !eligibility) {
       return res.status(400).json({ message: 'All fields are required' });
+    }
+
+    // Process eligibility - convert comma-separated string to array
+    let eligibilityArray = [];
+    if (typeof eligibility === 'string') {
+      eligibilityArray = eligibility.split(',').map(year => year.trim());
+    } else if (Array.isArray(eligibility)) {
+      eligibilityArray = eligibility;
     }
 
     const image = req.files?.image;
@@ -58,6 +67,7 @@ const createEvent = async (req, res) => {
       firstPrice: parseFloat(firstPrice),
       secondPrice: parseFloat(secondPrice),
       thirdPrice: parseFloat(thirdPrice),
+      eligibility: eligibilityArray,
       image: imageUrl,
       // createdBy: 
     });
@@ -110,12 +120,13 @@ const updateEvent = async (req, res) => {
       category, 
       firstPrice, 
       secondPrice, 
-      thirdPrice 
+      thirdPrice,
+      eligibility
     } = req.body;
 
     // Validate required fields
     if (!title || !department || !description || !date || !time || !location || !category || 
-        !firstPrice || !secondPrice || !thirdPrice) {
+        !firstPrice || !secondPrice || !thirdPrice || !eligibility) {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
@@ -147,6 +158,14 @@ const updateEvent = async (req, res) => {
       }
     }
 
+    // Process eligibility - convert comma-separated string to array
+    let eligibilityArray = [];
+    if (typeof eligibility === 'string') {
+      eligibilityArray = eligibility.split(',').map(year => year.trim());
+    } else if (Array.isArray(eligibility)) {
+      eligibilityArray = eligibility;
+    }
+
     // Update event fields
     event.title = title;
     event.department = department;
@@ -158,6 +177,7 @@ const updateEvent = async (req, res) => {
     event.firstPrice = parseFloat(firstPrice);
     event.secondPrice = parseFloat(secondPrice);
     event.thirdPrice = parseFloat(thirdPrice);
+    event.eligibility = eligibilityArray;
     event.image = imageUrl;
 
     // Save updated event
@@ -221,10 +241,37 @@ const getEventById = async (req, res) => {
   }
 };
 
+// Get site metrics
+const getSiteMetrics = async (req, res) => {
+  try {
+    // Get total number of events
+    const totalEvents = await Event.countDocuments();
+
+    // Get total number of participants
+    const totalParticipants = await Booking.countDocuments();
+
+    // Calculate total prize pool
+    const events = await Event.find({}, 'firstPrice secondPrice thirdPrice');
+    const totalPrizePool = events.reduce((total, event) => {
+      return total + (event.firstPrice || 0) + (event.secondPrice || 0) + (event.thirdPrice || 0);
+    }, 0);
+
+    res.status(200).json({
+      totalEvents,
+      totalParticipants,
+      totalPrizePool
+    });
+  } catch (error) {
+    console.error('Error fetching site metrics:', error);
+    res.status(500).json({ message: 'Error fetching metrics', error: error.message });
+  }
+};
+
 module.exports = {
   createEvent,
   getEvents,
   updateEvent,
   deleteEvent,
-  getEventById
+  getEventById,
+  getSiteMetrics
 };

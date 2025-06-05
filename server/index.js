@@ -12,7 +12,10 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'https://rit-events-client-f7bnerg2huejbyer.eastus-01.azurewebsites.net',
+  credentials: true
+}));
 app.use(express.json());
 
 
