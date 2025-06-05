@@ -2,14 +2,15 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { motion } from 'framer-motion';
-import { FaUser, FaIdCard, FaGraduationCap, FaCalendarAlt, FaCode, FaArrowRight } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+import { FaUser, FaIdCard, FaGraduationCap, FaCode, FaArrowRight } from 'react-icons/fa';
 
-const RegistrationForm = ({ eventId, capacity }) => {
+const RegistrationForm = ({ eventId, capacity, onSuccess }) => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     usn: '',
     name: '',
     year: '',
-    semester: '',
     branch: ''
   });
 
@@ -32,11 +33,6 @@ const RegistrationForm = ({ eventId, capacity }) => {
     // Year validation (1-4)
     if (formData.year < 1 || formData.year > 4) {
       newErrors.year = 'Year must be between 1 and 4';
-    }
-
-    // Semester validation (1-8)
-    if (formData.semester < 1 || formData.semester > 8) {
-      newErrors.semester = 'Semester must be between 1 and 8';
     }
 
     // Branch validation
@@ -77,7 +73,6 @@ const RegistrationForm = ({ eventId, capacity }) => {
         usn: formData.usn.toUpperCase(),
         name: formData.name,
         year: formData.year,
-        semester: formData.semester,
         branch: formData.branch
       });
 
@@ -87,9 +82,18 @@ const RegistrationForm = ({ eventId, capacity }) => {
           usn: '',
           name: '',
           year: '',
-          semester: '',
           branch: ''
         });
+        
+        // Call onSuccess callback if provided (for modal)
+        if (onSuccess) {
+          onSuccess();
+        }
+        
+        // Redirect to events page after successful registration
+        setTimeout(() => {
+          navigate('/events');
+        }, 2000); // Wait 2 seconds to show the success message
       }
     } catch (error) {
       if (error.response) {
@@ -103,18 +107,19 @@ const RegistrationForm = ({ eventId, capacity }) => {
   };
   
   const inputVariants = {
-    focus: { scale: 1.02, transition: { duration: 0.3 } },
+    focus: { scale: 1.02, borderColor: '#FC703C' },
     tap: { scale: 0.98 }
   };
 
   const formItemVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: i => ({
+    visible: (i) => ({
       opacity: 1,
       y: 0,
       transition: {
         delay: i * 0.1,
-        duration: 0.4
+        duration: 0.5,
+        ease: "easeOut"
       }
     })
   };
@@ -122,10 +127,9 @@ const RegistrationForm = ({ eventId, capacity }) => {
   return (
     <motion.form 
       onSubmit={handleSubmit} 
-      className="space-y-6"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
+      className="space-y-4"
+      initial="hidden"
+      animate="visible"
     >
       <motion.div
         custom={0}
@@ -134,7 +138,7 @@ const RegistrationForm = ({ eventId, capacity }) => {
         variants={formItemVariants}
       >
         <label className="block text-sm font-medium text-[#5D0703] mb-1">
-          Full Name <span className="text-[#FC703C]">*</span>
+          Name <span className="text-[#FC703C]">*</span>
         </label>
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -148,10 +152,10 @@ const RegistrationForm = ({ eventId, capacity }) => {
             name="name"
             value={formData.name}
             onChange={handleChange}
-            placeholder="Enter your full name"
             className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#FC703C] focus:border-[#FC703C] ${
               errors.name ? 'border-red-500' : 'border-gray-300'
             }`}
+            placeholder="Enter your full name"
           />
           {errors.name && (
             <p className="mt-1 text-sm text-red-600">{errors.name}</p>
@@ -180,10 +184,10 @@ const RegistrationForm = ({ eventId, capacity }) => {
             name="usn"
             value={formData.usn}
             onChange={handleChange}
-            placeholder="1MS20CS001"
             className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#FC703C] focus:border-[#FC703C] ${
               errors.usn ? 'border-red-500' : 'border-gray-300'
             }`}
+            placeholder="Enter your USN"
           />
           {errors.usn && (
             <p className="mt-1 text-sm text-red-600">{errors.usn}</p>
@@ -230,69 +234,34 @@ const RegistrationForm = ({ eventId, capacity }) => {
 
         <div>
           <label className="block text-sm font-medium text-[#5D0703] mb-1">
-            Semester <span className="text-[#FC703C]">*</span>
+            Branch <span className="text-[#FC703C]">*</span>
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <FaCalendarAlt className="text-[#FC703C]" />
+              <FaCode className="text-[#FC703C]" />
             </div>
             <motion.select
               whileFocus="focus"
               whileTap="tap"
               variants={inputVariants}
-              name="semester"
-              value={formData.semester}
+              name="branch"
+              value={formData.branch}
               onChange={handleChange}
               className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#FC703C] focus:border-[#FC703C] appearance-none bg-white ${
-                errors.semester ? 'border-red-500' : 'border-gray-300'
+                errors.branch ? 'border-red-500' : 'border-gray-300'
               }`}
             >
-              <option value="">Select Semester</option>
-              {[1, 2, 3, 4, 5, 6, 7, 8].map(sem => (
-                <option key={sem} value={sem}>{sem}</option>
-              ))}
+              <option value="">Select Branch</option>
+              <option value="CSE">Computer Science & Engineering</option>
+              <option value="ISE">Information Science & Engineering</option>
+              <option value="ECE">Electronics & Communication</option>
+              <option value="ME">Mechanical Engineering</option>
+              <option value="CV">Civil Engineering</option>
             </motion.select>
-            {errors.semester && (
-              <p className="mt-1 text-sm text-red-600">{errors.semester}</p>
+            {errors.branch && (
+              <p className="mt-1 text-sm text-red-600">{errors.branch}</p>
             )}
           </div>
-        </div>
-      </motion.div>
-
-      <motion.div
-        custom={3}
-        initial="hidden"
-        animate="visible"
-        variants={formItemVariants}
-      >
-        <label className="block text-sm font-medium text-[#5D0703] mb-1">
-          Branch <span className="text-[#FC703C]">*</span>
-        </label>
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <FaCode className="text-[#FC703C]" />
-          </div>
-          <motion.select
-            whileFocus="focus"
-            whileTap="tap"
-            variants={inputVariants}
-            name="branch"
-            value={formData.branch}
-            onChange={handleChange}
-            className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#FC703C] focus:border-[#FC703C] appearance-none bg-white ${
-              errors.branch ? 'border-red-500' : 'border-gray-300'
-            }`}
-          >
-            <option value="">Select Branch</option>
-            <option value="CSE">Computer Science & Engineering</option>
-            <option value="ISE">Information Science & Engineering</option>
-            <option value="ECE">Electronics & Communication</option>
-            <option value="ME">Mechanical Engineering</option>
-            <option value="CV">Civil Engineering</option>
-          </motion.select>
-          {errors.branch && (
-            <p className="mt-1 text-sm text-red-600">{errors.branch}</p>
-          )}
         </div>
       </motion.div>
 
@@ -301,7 +270,7 @@ const RegistrationForm = ({ eventId, capacity }) => {
         disabled={isSubmitting}
         whileHover={{ scale: 1.03 }}
         whileTap={{ scale: 0.97 }}
-        custom={4}
+        custom={3}
         initial="hidden"
         animate="visible"
         variants={formItemVariants}
@@ -309,19 +278,17 @@ const RegistrationForm = ({ eventId, capacity }) => {
           isSubmitting
             ? 'bg-[#FFA175] cursor-not-allowed'
             : 'bg-[#FC703C] hover:bg-[#5D0703]'
-        }`}
+        } flex items-center justify-center`}
       >
         {isSubmitting ? (
-          <div className="flex items-center justify-center">
-            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            Processing...
+          <div className="flex items-center">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+            Registering...
           </div>
         ) : (
-          <div className="flex items-center justify-center">
-            Register Now <FaArrowRight className="ml-2" />
+          <div className="flex items-center">
+            Register Now
+            <FaArrowRight className="ml-2" />
           </div>
         )}
       </motion.button>

@@ -5,12 +5,12 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import Home from './pages/Home';
 import Events from './pages/Events';
-// import EventDetails from './pages/EventDetails';
 import AdminLogin from './pages/AdminLogin';
 import AdminSignup from './pages/AdminSignup';
 import AdminDashboard from './pages/AdminDashboard';
 import CreateEvent from './pages/admin/CreateEvent';
 import EditEvent from './pages/admin/EditEvent';
+import EventDetails from './pages/admin/EventDetails';
 import EventParticipants from './pages/admin/EventParticipants';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -63,6 +63,14 @@ function App() {
           <ProtectedRoute>
             <Layout>
               <EditEvent />
+            </Layout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/admin/events/:id/details" element={
+          <ProtectedRoute>
+            <Layout>
+              <EventDetails />
             </Layout>
           </ProtectedRoute>
         } />

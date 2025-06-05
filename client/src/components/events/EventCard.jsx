@@ -43,15 +43,15 @@ const EventCard = ({ event, onRegister, onView, isPast = false }) => {
       
       <div className="p-5">
         <h3 className="text-xl font-bold text-[#5D0703] truncate">{event.title}</h3>
-        <div className="flex items-center mt-2 text-gray-600 text-sm">
+        <div className="flex items-center mt-2 text-[#5D0703] text-sm">
           <FaCalendarAlt className="text-[#FC703C] mr-1" />
           <span>{new Date(event.date).toLocaleDateString()}</span>
         </div>
-        <div className="flex items-center mt-2 text-gray-600 text-sm">
+        <div className="flex items-center mt-2 text-[#5D0703] text-sm">
           <FaMapMarkerAlt className="text-[#FC703C] mr-1" />
           <span className="truncate">{event.location}</span>
         </div>
-        <p className="text-gray-600 mt-3 text-sm line-clamp-2">
+        <p className="text-[#5D0703] mt-3 text-sm line-clamp-2">
           {event.description}
         </p>
         

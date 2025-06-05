@@ -102,21 +102,30 @@ const EventParticipants = () => {
     }
 
     // Create CSV headers
-    const headers = ['Name', 'USN', 'branch', 'Year', 'Semester', 'Registration Date'];
+    const headers = ['Name', 'USN', 'Branch', 'Year', 'Registration Date'];
     
-    // Format participant data
-    const data = participants.map(p => [
-      p.user?.name || 'N/A',
-      p.user?.usn || 'N/A',
-      p.user?.year || 'N/A',
-      p.user?.branch || 'N/A',
-      p.user?.semester || 'N/A',
-      p.createdAt ? new Date(p.createdAt).toLocaleString() : 'N/A'
-    ]);
+    // Format participant data - handle the actual data structure
+    const data = participants.map(p => {
+      // Extract data from the participant object, handling different structures
+      const userData = p?.user || p;
+      const name = userData?.name || p?.name || 'N/A';
+      const usn = userData?.usn || p?.usn || 'N/A';
+      const branch = userData?.branch || p?.branch || 'N/A';
+      const year = userData?.year || p?.year || 'N/A';
+      const registrationDate = p?.createdAt ? new Date(p.createdAt).toLocaleString() : 'N/A';
+      
+      return [
+        `"${name}"`, // Wrap in quotes to handle commas in names
+        `"${usn}"`,
+        `"${branch}"`,
+        `"${year}"`,
+        `"${registrationDate}"`
+      ];
+    });
     
     // Combine headers and data
     const csvContent = [
-      headers.join(','),
+      headers.map(h => `"${h}"`).join(','), // Wrap headers in quotes too
       ...data.map(row => row.join(','))
     ].join('\n');
     
@@ -126,13 +135,16 @@ const EventParticipants = () => {
     const link = document.createElement('a');
     
     // Set filename with event title and date
-    const fileName = `${event.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_participants_${new Date().toISOString().split('T')[0]}.csv`;
+    const fileName = `${event?.title?.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'event'}_participants_${new Date().toISOString().split('T')[0]}.csv`;
     
     link.href = url;
     link.setAttribute('download', fileName);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    
+    // Clean up the URL object
+    URL.revokeObjectURL(url);
     
     toast.success('Participants data exported successfully');
   };

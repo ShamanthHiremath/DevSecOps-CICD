@@ -50,10 +50,20 @@ const eventSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+  eligibility: {
+    type: [String], // Array of strings for multiple years
+    required: true,
+    validate: {
+      validator: function(years) {
+        return years.length > 0 && years.every(year => ['1', '2', '3', '4'].includes(year));
+      },
+      message: 'Eligibility must contain at least one valid year (1, 2, 3, or 4)'
+    }
+  },
   createdAt: {
     type: Date,
     default: Date.now
   }
 });
 
-module.exports = mongoose.model('Event', eventSchema); 
+module.exports = mongoose.model('Event', eventSchema);
