@@ -17,7 +17,7 @@ const EditEvent = () => {
     const fetchEvent = async () => {
       try {
         setIsLoading(true);
-        const response = await axios.get(`http://localhost:5000/api/events/${id}`);
+        const response = await axios.get(import.meta.env.VITE_SERVER_API_URL + `/api/events/${id}`);
         
         // Format date for input field (YYYY-MM-DD)
         const eventDate = new Date(response.data.date);
@@ -54,7 +54,7 @@ const EditEvent = () => {
         data.append(key, formData[key]);
       });
 
-      const response = await axios.put(`http://localhost:5000/api/events/${id}`, data, {
+      const response = await axios.put(import.meta.env.VITE_SERVER_API_URL + `/api/events/${id}`, data, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${localStorage.getItem('adminToken')}`

@@ -5,6 +5,7 @@ const { authenticateAdmin } = require('../middleware/auth');
 
 // Public routes
 router.get('/', eventController.getEvents);
+router.get('/metrics', eventController.getSiteMetrics);
 router.get('/:id', eventController.getEventById);
 
 // Admin-only routes

@@ -16,7 +16,8 @@ const CreateEventForm = ({ onSubmit, isSubmitting }) => {
     image: null,
     firstPrice: '',
     secondPrice: '',
-    thirdPrice: ''
+    thirdPrice: '',
+    eligibility: [] // Array for multiple years
   });
 
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -33,6 +34,8 @@ const CreateEventForm = ({ onSubmit, isSubmitting }) => {
     'Other'
   ];
 
+  const years = ['1', '2', '3', '4'];
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -43,6 +46,26 @@ const CreateEventForm = ({ onSubmit, isSubmitting }) => {
       setErrors(prev => ({
         ...prev,
         [name]: ''
+      }));
+    }
+  };
+
+  const handleEligibilityChange = (year) => {
+    setFormData(prev => {
+      const newEligibility = prev.eligibility.includes(year)
+        ? prev.eligibility.filter(y => y !== year)
+        : [...prev.eligibility, year];
+      
+      return {
+        ...prev,
+        eligibility: newEligibility
+      };
+    });
+    
+    if (errors.eligibility) {
+      setErrors(prev => ({
+        ...prev,
+        eligibility: ''
       }));
     }
   };
@@ -106,6 +129,9 @@ const CreateEventForm = ({ onSubmit, isSubmitting }) => {
     }
     if (!formData.image) {
       newErrors.image = 'Event image is required';
+    }
+    if (formData.eligibility.length === 0) {
+      newErrors.eligibility = 'Please select at least one eligible year';
     }
 
     setErrors(newErrors);
@@ -256,6 +282,32 @@ const CreateEventForm = ({ onSubmit, isSubmitting }) => {
               {errors.category && <p className="mt-1 text-sm text-red-600">{errors.category}</p>}
             </div>
           </div>
+
+          {/* Eligibility Section */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Eligible Years <span className="text-red-500">*</span>
+            </label>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {years.map(year => (
+                <label key={year} className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={formData.eligibility.includes(year)}
+                    onChange={() => handleEligibilityChange(year)}
+                    className="h-4 w-4 text-red-800 focus:ring-red-500 border-gray-300 rounded"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">
+                    Year {year}
+                  </span>
+                </label>
+              ))}
+            </div>
+            {errors.eligibility && <p className="mt-1 text-sm text-red-600">{errors.eligibility}</p>}
+            <p className="mt-1 text-xs text-gray-500">
+              Select which year(s) of students can participate in this event
+            </p>
+          </div>
         </div>
       </div>
 
@@ -326,42 +378,97 @@ const CreateEventForm = ({ onSubmit, isSubmitting }) => {
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Upload Image <span className="text-red-500">*</span>
           </label>
-          <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-            <div className="space-y-1 text-center">
-              <svg
-                className="mx-auto h-12 w-12 text-gray-400"
-                stroke="currentColor"
-                fill="none"
-                viewBox="0 0 48 48"
-                aria-hidden="true"
-              >
-                <path
-                  d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+          
+          {/* Image Preview */}
+          {previewUrl && (
+            <div className="mb-4">
+              <div className="relative inline-block">
+                <img
+                  src={previewUrl}
+                  alt="Event preview"
+                  className="h-40 w-60 object-cover rounded-lg border-2 border-gray-200 shadow-sm"
                 />
-              </svg>
-              <div className="flex text-sm text-gray-600">
-                <label
-                  htmlFor="file-upload"
-                  className="relative cursor-pointer bg-white rounded-md font-medium text-red-800 hover:text-red-900 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPreviewUrl(null);
+                    setFormData(prev => ({ ...prev, image: null }));
+                    // Reset file input
+                    const fileInput = document.getElementById('file-upload');
+                    if (fileInput) fileInput.value = '';
+                  }}
+                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
+                  title="Remove image"
                 >
-                  <span>Upload a file</span>
-                  <input
-                    id="file-upload"
-                    name="file-upload"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="sr-only"
-                  />
-                </label>
-                <p className="pl-1">or drag and drop</p>
+                  ×
+                </button>
               </div>
-              <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+              <p className="text-sm text-gray-600 mt-2">
+                Image selected: {formData.image?.name}
+              </p>
             </div>
-          </div>
+          )}
+
+          {/* Upload Area */}
+          {!previewUrl && (
+            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-gray-400 transition-colors">
+              <div className="space-y-1 text-center">
+                <svg
+                  className="mx-auto h-12 w-12 text-gray-400"
+                  stroke="currentColor"
+                  fill="none"
+                  viewBox="0 0 48 48"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <div className="flex text-sm text-gray-600">
+                  <label
+                    htmlFor="file-upload"
+                    className="relative cursor-pointer bg-white rounded-md font-medium text-red-800 hover:text-red-900 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
+                  >
+                    <span>Upload a file</span>
+                    <input
+                      id="file-upload"
+                      name="file-upload"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="sr-only"
+                    />
+                  </label>
+                  <p className="pl-1">or drag and drop</p>
+                </div>
+                <p className="text-xs text-gray-500">PNG, JPG, GIF up to 5MB</p>
+              </div>
+            </div>
+          )}
+
+          {/* Change Image Button when preview exists */}
+          {previewUrl && (
+            <div className="mt-3">
+              <label
+                htmlFor="file-upload-change"
+                className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer"
+              >
+                Change Image
+                <input
+                  id="file-upload-change"
+                  name="file-upload-change"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="sr-only"
+                />
+              </label>
+            </div>
+          )}
+
           {errors.image && <p className="mt-1 text-sm text-red-600">{errors.image}</p>}
         </div>
       </div>
@@ -392,4 +499,4 @@ const CreateEventForm = ({ onSubmit, isSubmitting }) => {
   );
 };
 
-export default CreateEventForm; 
+export default CreateEventForm;

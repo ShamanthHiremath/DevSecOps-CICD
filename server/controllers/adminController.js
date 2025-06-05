@@ -44,8 +44,7 @@ exports.adminLogin = async (req, res) => {
 // Register for an event
 exports.registerForEvent = async (req, res) => {
   try {
-    const { eventId, usn, year, semester, branch, name } = req.body;
-
+    const { eventId, usn, year, branch, name } = req.body;
 
     // Check if event exists
     const event = await Event.findById(eventId);
@@ -53,7 +52,14 @@ exports.registerForEvent = async (req, res) => {
       return res.status(404).json({ message: 'Event not found' });
     }
 
-    // Check if USN is already registered for this event
+    // Check if the user's year is eligible for this event
+    if (!event.eligibility.includes(year.toString())) {
+      return res.status(403).json({ 
+        message: `This event is only open to students from year(s): ${event.eligibility.join(', ')}. Your year (${year}) is not eligible.` 
+      });
+    }
+
+    // Check if USN is already registered for this specific event
     const existingBooking = await Booking.findOne({ event: eventId, usn: usn.toUpperCase() });
     if (existingBooking) {
       return res.status(400).json({ message: 'This USN is already registered for this event' });
@@ -64,7 +70,6 @@ exports.registerForEvent = async (req, res) => {
       event: eventId,
       usn: usn.toUpperCase(),
       year,
-      semester,
       branch,
       name
     });
@@ -76,8 +81,9 @@ exports.registerForEvent = async (req, res) => {
       booking
     });
   } catch (error) {
+    // Handle duplicate key error for compound index (event + usn)
     if (error.code === 11000) {
-      return res.status(400).json({ message: 'This USN is already registered for an event' });
+      return res.status(400).json({ message: 'This USN is already registered for this event' });
     }
     res.status(500).json({ message: 'Server error', error: error.message });
   }
@@ -86,7 +92,6 @@ exports.registerForEvent = async (req, res) => {
 // Get all event participants
 exports.getEventParticipants = async (req, res) => {
   try {
-    console.log("Fetching event participants");
     const { eventId } = req.params;
 
     // Check if event exists
@@ -97,7 +102,7 @@ exports.getEventParticipants = async (req, res) => {
 
     // Get all bookings for the event
     const participants = await Booking.find({ event: eventId })
-      .select('usn year semester branch tickets createdAt name');
+      .select('usn year branch tickets createdAt name');
 
     res.status(200).json({
       event: {
@@ -115,21 +120,17 @@ exports.getEventParticipants = async (req, res) => {
 // Admin Signup
 exports.adminSignup = async (req, res) => {
   try {
-    console.log("Admin signup");
     const { email, password, name } = req.body;
     if (!email || !password || !name) {
       return res.status(400).json({ message: 'All fields are required' });
     }
-    console.log("Email: ", email);
     // Check if email already exists
     const existing = await User.findOne({ email });
     if (existing) {
       return res.status(409).json({ message: 'email already exists' });
     }
-    console.log("Creating new admin");
     const admin = new User({ email, password, name });
     await admin.save();
-    console.log("Admin created successfully");
     res.status(201).json({ message: 'Admin registered successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
